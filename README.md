@@ -8,7 +8,7 @@ A strategy simulation game where players manage water, cities, and ecosystems ac
 
 Crystal Catchment is an environmental civilization simulator focused on the interconnected relationship between human development and the water cycle.
 
-Players are tasked with developing a vulnerable region surrounded by critical water resources and flood-prone terrain. Using a limited infrastructure deck, players must balance expansion, water demand, ecological resilience, and disaster mitigation in order to keep their civilization alive over a 100-year timeline.
+Players are tasked with developing a vulnerable region surrounded by critical water resources and flood-prone terrain. Using a limited infrastructure deck, players must balance expansion, water demand, ecological resilience, and disaster mitigation in order to keep their civilization alive.
 
 The game blends:
 - City-building simulation
