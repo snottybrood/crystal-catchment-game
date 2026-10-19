@@ -189,9 +189,6 @@ button.danger-btn { border-color: var(--red); color: var(--red); }
   grid-template-columns: 1fr 1fr;
   gap: 5px;
 }
-#build-grid .build-btn.full-width {
-  grid-column: 1 / -1;
-}
 .build-btn {
   background: var(--panel2);
   border: 1px solid var(--border);
@@ -206,14 +203,13 @@ button.danger-btn { border-color: var(--red); color: var(--red); }
 .build-btn:hover { background: var(--border); border-color: var(--border2); }
 .build-btn.selected { border-color: var(--teal); background: rgba(6,182,212,0.1); }
 .build-btn.cant-afford { opacity: 0.4; cursor: not-allowed; }
-.build-btn.demolish-btn { border-color: var(--red); }
+.build-btn.demolish-btn { border-color: var(--red); margin-top: 5px; }
 .build-btn.demolish-btn .build-icon { color: var(--red) !important; }
 .build-btn.demolish-btn .build-name { color: var(--red); }
 .build-btn.demolish-btn .build-cost { color: var(--text2); }
 .build-btn.demolish-btn.selected { background: rgba(239,68,68,0.12); border-color: var(--red); }
 #map-canvas.demolish-mode { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ctext y='16' font-size='16'%3E🔨%3C/text%3E%3C/svg%3E") 4 16, crosshair; }
 .build-icon { font-size: 16px; flex-shrink: 0; width: 20px; text-align: center; }
-.build-info {}
 .build-name { font-size: 10px; color: var(--bright); font-weight: 700; line-height: 1.2; }
 .build-cost { font-size: 9px; color: var(--amber); }
 
@@ -305,11 +301,20 @@ button.danger-btn { border-color: var(--red); color: var(--red); }
   border: 1px solid var(--border2);
   border-radius: 8px;
   padding: 28px 32px;
-  max-width: 380px;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
   text-align: center;
 }
 #modal h2 { font-size: 18px; color: var(--bright); margin-bottom: 10px; }
-#modal p  { font-size: 12px; color: var(--text); margin-bottom: 20px; line-height: 1.7; }
+#modal p  {
+  font-size: 12px;
+  color: var(--text);
+  margin-bottom: 20px;
+  line-height: 1.7;
+  white-space: pre-line;   /* FIX: keep paragraph breaks in modal text */
+  text-align: left;
+}
 #modal-btn {
   background: var(--teal);
   border: none;
@@ -334,7 +339,7 @@ button.danger-btn { border-color: var(--red); color: var(--red); }
   display: none;
   z-index: 50;
   line-height: 1.6;
-  max-width: 160px;
+  max-width: 180px;
 }
 </style>
 </head>
@@ -344,10 +349,10 @@ button.danger-btn { border-color: var(--red); color: var(--red); }
 <div id="topbar">
   <h1>Crystal Catchment</h1>
   <div class="stat-chip" id="chip-date"><span class="label">YEAR</span><span id="val-date">1 · Spring</span></div>
-  <div class="stat-chip" id="chip-pop"><span class="label">POP</span><span id="val-pop">50</span></div>
-  <div class="stat-chip" id="chip-water"><span class="label">WATER</span><span id="val-water">0/0</span></div>
-  <div class="stat-chip" id="chip-food"><span class="label">FOOD</span><span id="val-food">50</span></div>
-  <div class="stat-chip" id="chip-money"><span class="label">CREDITS</span><span id="val-money">600</span></div>
+  <div class="stat-chip" id="chip-pop"><span class="label">POP</span><span id="val-pop">—</span></div>
+  <div class="stat-chip" id="chip-water"><span class="label">WATER</span><span id="val-water">—</span></div>
+  <div class="stat-chip" id="chip-food"><span class="label">FOOD</span><span id="val-food">—</span></div>
+  <div class="stat-chip" id="chip-money"><span class="label">CREDITS</span><span id="val-money">—</span></div>
   <div id="topbar-right">
     <button id="btn-pause" onclick="togglePause()">⏸ Pause</button>
     <button onclick="setSpeed(1)" id="spd1" class="active">1×</button>
@@ -364,7 +369,7 @@ button.danger-btn { border-color: var(--red); color: var(--red); }
   <!-- MAP -->
   <div id="map-wrap">
     <canvas id="map-canvas"></canvas>
-    <div id="build-mode-banner">● BUILD MODE — click tile to place · click button again to cancel</div>
+    <div id="build-mode-banner"></div>
   </div>
 
   <!-- SIDEBAR -->
@@ -375,27 +380,27 @@ button.danger-btn { border-color: var(--red); color: var(--red); }
       <div class="side-title">Water Cycle</div>
       <div class="gauge-row">
         <span class="gauge-label">Humidity</span>
-        <div class="gauge-bar-wrap"><div class="gauge-bar" id="g-humidity" style="background:#38bdf8"></div></div>
+        <div class="gauge-bar-wrap"><div class="gauge-bar" id="g-humidity"></div></div>
         <span class="gauge-val" id="v-humidity">—</span>
       </div>
       <div class="gauge-row">
         <span class="gauge-label">Temperature</span>
-        <div class="gauge-bar-wrap"><div class="gauge-bar" id="g-temp" style="background:#f97316"></div></div>
+        <div class="gauge-bar-wrap"><div class="gauge-bar" id="g-temp"></div></div>
         <span class="gauge-val" id="v-temp">—</span>
       </div>
       <div class="gauge-row">
         <span class="gauge-label">Groundwater</span>
-        <div class="gauge-bar-wrap"><div class="gauge-bar" id="g-gw" style="background:#0ea5e9"></div></div>
+        <div class="gauge-bar-wrap"><div class="gauge-bar" id="g-gw"></div></div>
         <span class="gauge-val" id="v-gw">—</span>
       </div>
       <div class="gauge-row">
         <span class="gauge-label">Surface Water</span>
-        <div class="gauge-bar-wrap"><div class="gauge-bar" id="g-sw" style="background:#06b6d4"></div></div>
+        <div class="gauge-bar-wrap"><div class="gauge-bar" id="g-sw"></div></div>
         <span class="gauge-val" id="v-sw">—</span>
       </div>
       <div class="gauge-row">
         <span class="gauge-label">Rainfall</span>
-        <div class="gauge-bar-wrap"><div class="gauge-bar" id="g-rain" style="background:#818cf8"></div></div>
+        <div class="gauge-bar-wrap"><div class="gauge-bar" id="g-rain"></div></div>
         <span class="gauge-val" id="v-rain">—</span>
       </div>
       <canvas id="trend-canvas" width="236" height="60"></canvas>
@@ -405,12 +410,7 @@ button.danger-btn { border-color: var(--red); color: var(--red); }
     <div class="side-section">
       <div class="side-title">Build</div>
       <div id="build-grid"></div>
-      <div id="bbtn-demolish"
-           class="build-btn demolish-btn full-width"
-           style="margin-top:5px"
-           onclick="selectBuild('demolish')"
-           onmouseenter="showTooltip(event,'Bulldoze (free)','Click any building to demolish it. Refunds 50% of build cost.')"
-           onmouseleave="hideTooltip()">
+      <div id="bbtn-demolish" class="build-btn demolish-btn">
         <div class="build-icon">🔨</div>
         <div class="build-info">
           <div class="build-name">Bulldoze</div>
@@ -443,15 +443,23 @@ button.danger-btn { border-color: var(--red); color: var(--red); }
 </div>
 
 <!-- TOOLTIP -->
-<div id="tooltip" id="tooltip"></div>
+<div id="tooltip"></div>
 
 <script>
+// Crystal Catchment v1.1 (bug-fix release)
 // ═══════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════
+const VERSION = '1.1';
 const MAP_W = 28, MAP_H = 20, TILE = 22;
+const BASE_TICK_MS = 2000;
+const EVENT_COOLDOWN = 6;      // ticks before the same event can fire again
+const RES_CAPACITY = 200;      // reservoir storage cap
+const RES_RELEASE  = 5;        // max reservoir release per tick
+const START_POP    = 40;
 
 const T = { OCEAN:0, SHALLOW:1, PLAINS:2, FOREST:3, DESERT:4, MOUNTAIN:5, SNOW:6, WETLAND:7 };
+const TILE_NAMES = ['Ocean','Shallow','Plains','Forest','Desert','Mountain','Snow','Wetland'];
 const B = { WELL:'well', RESERVOIR:'reservoir', TREATMENT:'treatment',
             IRRIGATION:'irrigation', FARM:'farm', HOUSE:'house',
             FOREST:'reforest', DESALINATION:'desalination' };
@@ -465,14 +473,14 @@ const COSTS = {
 };
 
 const BUILD_META = [
-  { id:B.WELL,        name:'Well',             icon:'◎', color:'#7dd3fc', desc:'Extracts groundwater → fresh water supply. Over-pumping depletes aquifer.' },
-  { id:B.RESERVOIR,   name:'Reservoir',        icon:'▬', color:'#38bdf8', desc:'Collects surface water runoff. Reduces flood risk. Stores up to 200 units.' },
+  { id:B.WELL,        name:'Well',             icon:'◎', color:'#7dd3fc', desc:'Extracts groundwater for fresh water supply. Over-pumping depletes the aquifer.' },
+  { id:B.RESERVOIR,   name:'Reservoir',        icon:'▬', color:'#38bdf8', desc:'Captures runoff from its tile and higher neighbors. Stores up to 200 units and releases up to 5 per tick.' },
   { id:B.TREATMENT,   name:'Treatment Plant',  icon:'⬡', color:'#a78bfa', desc:'Purifies contaminated water. Reduces disease risk in nearby tiles.' },
-  { id:B.IRRIGATION,  name:'Irrigation',       icon:'≈', color:'#67e8f9', desc:'Distributes moisture to nearby farms. Build near water source.' },
+  { id:B.IRRIGATION,  name:'Irrigation',       icon:'≈', color:'#67e8f9', desc:'Distributes moisture to nearby farms. Build near a water source.' },
   { id:B.FARM,        name:'Farm',             icon:'✾', color:'#86efac', desc:'Produces food. Needs soil moisture. Risk of fertilizer runoff.' },
   { id:B.HOUSE,       name:'Housing',          icon:'⌂', color:'#fbbf24', desc:'Houses up to 30 residents. Each house needs water supply.' },
-  { id:B.FOREST,      name:'Reforest',         icon:'♣', color:'#4ade80', desc:'Restores vegetation. Increases humidity, precipitation, and soil moisture.' },
-  { id:B.DESALINATION,name:'Desalination',     icon:'◈', color:'#f472b6', desc:'Converts sea water to fresh. Must be adjacent to ocean tile.' },
+  { id:B.FOREST,      name:'Reforest',         icon:'♣', color:'#4ade80', desc:'Restores vegetation. Increases humidity, rainfall, and infiltration.' },
+  { id:B.DESALINATION,name:'Desalination',     icon:'◈', color:'#f472b6', desc:'Converts sea water to fresh. Must be built on a coastal land tile.' },
 ];
 
 const TILE_COLORS = {
@@ -486,16 +494,8 @@ const TILE_COLORS = {
   [T.WETLAND]: [30,70,52],
 };
 
-const BUILD_COLORS = {
-  well:'#7dd3fc', reservoir:'#38bdf8', treatment:'#a78bfa',
-  irrigation:'#67e8f9', farm:'#86efac', house:'#fbbf24',
-  reforest:'#4ade80', desalination:'#f472b6'
-};
-const BUILD_ICONS = {
-  well:'◎', reservoir:'▬', treatment:'⬡',
-  irrigation:'≈', farm:'✾', house:'⌂',
-  reforest:'♣', desalination:'◈'
-};
+const BUILD_COLORS = Object.fromEntries(BUILD_META.map(b=>[b.id,b.color]));
+const BUILD_ICONS  = Object.fromEntries(BUILD_META.map(b=>[b.id,b.icon]));
 
 // ═══════════════════════════════════════════════════════════════════
 // STATE
@@ -503,24 +503,26 @@ const BUILD_ICONS = {
 let S, canvas, ctx, trendCanvas, trendCtx, gameTimer;
 let rainParticles = [];
 let hoverTile = null;
+let modalOpen = false;
 
 function makeState() {
   return {
     tiles: [],
     humidity: 55,
     temperature: 45,
-    population: 50,
+    population: START_POP,
     maxPopulation: 50,
     waterProduced: 0,
     waterDemand: 1,
     food: 60,
-    maxFood: 80,
+    maxFood: 72,
     money: 600,
     tick: 0, year: 1, season: 0,
     lastRain: 0,
     droughtTicks: 0, floodTicks: 0,
     diseaseTicks: 0, warTicks: 0,
-    activeEventKeys: new Set(),
+    eventCooldowns: new Map(),   // FIX: event key -> tick when it can fire again
+    milestones: new Set(),
     log: [],
     selectedTile: null,
     selectedBuild: null,
@@ -595,11 +597,23 @@ function neighbors(x,y){
   return [[-1,0],[1,0],[0,-1],[0,1]].filter(([dx,dy])=>inBounds(x+dx,y+dy))
     .map(([dx,dy])=>tile(x+dx,y+dy));
 }
-function landTiles(){ return S.tiles.filter(t=>t.type!==T.OCEAN&&t.type!==T.SHALLOW); }
+function isWater(t){ return t.type===T.OCEAN||t.type===T.SHALLOW; }
+function landTiles(){ return S.tiles.filter(t=>!isWater(t)); }
+function isCoastal(t){ return neighbors(t.x,t.y).some(isWater); }
 
 function addLog(msg, type='info'){
-  S.log.unshift({msg, type});
+  S.log.unshift({msg, type, tick:S.tick});   // FIX: record tick for the log timestamp
   if(S.log.length>30) S.log.pop();
+}
+
+// Single source of truth for placement rules (used by hover preview AND placement).
+// Returns an error message, or null if the building can go here.
+function placementError(t, bt){
+  if(bt==='demolish') return t.building ? null : 'No building on that tile to demolish.';
+  if(isWater(t))      return 'Cannot build on water tiles.';
+  if(t.building)      return 'Tile already occupied. Demolish first.';
+  if(bt===B.DESALINATION && !isCoastal(t)) return 'Desalination must be on a coastal tile (next to ocean).';
+  return null;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -651,7 +665,6 @@ function simWaterCycle(){
   // Precipitation
   const baseChance = (S.humidity/100) * 0.022 * sm[0];
   S.lastRain = 0;
-  let rainCount = 0;
   for(const t of land){
     const elvBonus  = t.elevation > 6 ? 1.6 : 1.0;
     const foreBonus = t.type===T.FOREST ? 1.35 : 1.0;
@@ -660,7 +673,6 @@ function simWaterCycle(){
       t.surfaceWater = Math.min(100, t.surfaceWater + amt);
       t.moisture     = Math.min(100, t.moisture + amt*0.25);
       S.lastRain += amt;
-      rainCount++;
       // visual particle
       if(Math.random()<0.3) rainParticles.push({
         x: t.x*TILE + Math.random()*TILE,
@@ -677,7 +689,9 @@ function simWaterCycle(){
     [T.MOUNTAIN]:0.14,[T.WETLAND]:0.50,[T.SNOW]:0.06
   };
   for(const t of land){
-    const perm = (permeability[t.type]||0.2) * (t.building ? 0.55 : 1.0);
+    // FIX: reforested tiles are not paved over, so they keep full forest infiltration
+    const sealed = t.building && t.building.type!==B.FOREST;
+    const perm = (permeability[t.type]||0.2) * (sealed ? 0.55 : 1.0);
     const inf  = t.surfaceWater * perm * 0.18;
     t.surfaceWater  = Math.max(0, t.surfaceWater - inf);
     t.groundwater   = Math.min(100, t.groundwater + inf*0.85);
@@ -687,7 +701,7 @@ function simWaterCycle(){
   const dSW = S.tiles.map(t=>t.surfaceWater);
   for(let y=0;y<MAP_H;y++) for(let x=0;x<MAP_W;x++){
     const t = tile(x,y);
-    if(t.type===T.OCEAN||t.type===T.SHALLOW) continue;
+    if(isWater(t)) continue;
     if(t.surfaceWater > 55){
       const excess = (t.surfaceWater-55)*0.18;
       const lower  = neighbors(x,y).filter(n=>n.elevation<t.elevation);
@@ -699,6 +713,20 @@ function simWaterCycle(){
     }
   }
   for(let i=0;i<S.tiles.length;i++) S.tiles[i].surfaceWater = Math.max(0, dSW[i]);
+
+  // FIX: lateral groundwater flow. Water moves slowly from wetter to drier
+  // neighboring tiles, so a well draws down the aquifer around it (a "cone of
+  // depression") instead of draining only its own tile in a few ticks.
+  const dGW = S.tiles.map(t=>t.groundwater);
+  for(const t of land){
+    for(const n of neighbors(t.x,t.y)){
+      if(isWater(n) || n.groundwater >= t.groundwater) continue;
+      const flow = (t.groundwater - n.groundwater) * 0.06;
+      dGW[idx(t.x,t.y)] -= flow;
+      dGW[idx(n.x,n.y)] += flow;
+    }
+  }
+  for(const t of land) t.groundwater = Math.max(0, Math.min(100, dGW[idx(t.x,t.y)]));
 
   // Natural groundwater slow seep out
   for(const t of land) t.groundwater = Math.max(0, t.groundwater - 0.04);
@@ -745,10 +773,20 @@ function simBuildings(){
         break;
       }
       case B.RESERVOIR:{
-        const coll = Math.min(t.surfaceWater, 8);
+        // FIX: capture runoff from own tile AND from higher (upstream) neighbors,
+        // and release less than it can collect so storage actually builds up.
+        let coll = Math.min(t.surfaceWater, 8);
         t.surfaceWater -= coll;
-        b.stored = Math.min(200, (b.stored||0)+coll);
-        const release = Math.min(10, b.stored||0);
+        for(const n of neighbors(t.x,t.y)){
+          if(isWater(n) || n.elevation < t.elevation) continue;
+          if(n.surfaceWater > 20){
+            const take = Math.min(n.surfaceWater-20, 4);
+            n.surfaceWater -= take;
+            coll += take;
+          }
+        }
+        b.stored = Math.min(RES_CAPACITY, (b.stored||0) + coll);
+        const release = Math.min(RES_RELEASE, b.stored);
         b.stored -= release;
         waterProd += release;
         break;
@@ -760,8 +798,7 @@ function simBuildings(){
         break;
       }
       case B.DESALINATION:{
-        const nearOcean = neighbors(t.x,t.y).some(n=>n.type===T.OCEAN||n.type===T.SHALLOW);
-        if(nearOcean) waterProd += 10;
+        if(isCoastal(t)) waterProd += 10;
         break;
       }
       case B.IRRIGATION:{
@@ -797,8 +834,7 @@ function simBuildings(){
   }
 
   S.waterProduced = waterProd;
-  S.waterDemand   = waterCons + S.population * 0.15;
-  S.waterDemand   = Math.max(1, S.waterDemand);
+  S.waterDemand   = Math.max(1, waterCons + S.population * 0.15);
   S.foodProduced  = foodProd;
   const foodConsumed = S.population * 0.4;
   S.food = Math.max(0, Math.min(S.maxFood, S.food + foodProd - foodConsumed));
@@ -843,39 +879,46 @@ function simPopulation(){
 // ═══════════════════════════════════════════════════════════════════
 // EVENTS
 // ═══════════════════════════════════════════════════════════════════
-function fireEvent(key, msg, type){
-  if(S.activeEventKeys.has(key)) return;
-  S.activeEventKeys.add(key);
+// FIX: cooldowns now count game ticks (respects pause and speed), and the
+// function returns true only when the event actually fires, so event effects
+// can't be applied again while the event is on cooldown.
+function fireEvent(key, msg, type, cooldown=EVENT_COOLDOWN){
+  const readyAt = S.eventCooldowns.get(key);
+  if(readyAt!==undefined && S.tick < readyAt) return false;
+  S.eventCooldowns.set(key, S.tick + cooldown);
   addLog(msg, type);
-  // expire after 6 ticks
-  setTimeout(()=>S.activeEventKeys.delete(key), CFG_TICK_MS*6);
+  return true;
 }
-let CFG_TICK_MS = 2000;
 
 function checkEvents(){
   // DROUGHT
-  if(S.humidity<22){ S.droughtTicks++;
-    if(S.droughtTicks===3) fireEvent('drought-warn','⚠️ DROUGHT WARNING: Humidity critically low. Wells depleting.','warn');
-    if(S.droughtTicks===8){ fireEvent('drought-crit','🔴 SEVERE DROUGHT: Crops failing. Plant forests urgently.','danger');
+  if(S.humidity<22){
+    S.droughtTicks++;
+    if(S.droughtTicks===3)
+      fireEvent('drought-warn','⚠️ DROUGHT WARNING: Humidity critically low. Wells depleting.','warn');
+    if(S.droughtTicks===8 &&
+       fireEvent('drought-crit','🔴 SEVERE DROUGHT: Crops failing. Plant forests urgently.','danger')){
       for(const t of landTiles()) t.groundwater=Math.max(0,t.groundwater-3);
     }
   } else { S.droughtTicks=Math.max(0,S.droughtTicks-1); }
 
   // FLOOD
-  const floodTiles = S.tiles.filter(t=>t.type!==T.OCEAN&&t.surfaceWater>82).length;
-  if(floodTiles>6){ S.floodTicks++;
-    if(S.floodTicks===1){
-      fireEvent('flood','🌊 FLOOD ALERT: Surface overflow. Build reservoirs to capture runoff.','warn');
+  const floodTiles = S.tiles.filter(t=>!isWater(t)&&t.surfaceWater>82).length;
+  if(floodTiles>6){
+    S.floodTicks++;
+    if(S.floodTicks===1 &&
+       fireEvent('flood','🌊 FLOOD ALERT: Surface overflow. Build reservoirs to capture runoff.','warn')){
       for(const t of S.tiles)
         if(t.surfaceWater>82&&t.building) t.contamination=Math.min(100,t.contamination+22);
     }
   } else { S.floodTicks=Math.max(0,S.floodTicks-1); }
 
   // HURRICANE
-  if(S.humidity>82 && S.temperature>68){
-    fireEvent('hurricane','🌀 HURRICANE FORMING: Extreme conditions. Massive rainfall imminent.','danger');
+  if(S.humidity>82 && S.temperature>68 &&
+     fireEvent('hurricane','🌀 HURRICANE FORMING: Extreme conditions. Massive rainfall imminent.','danger')){
     for(const t of S.tiles){
-      if(t.type!==T.OCEAN){ t.surfaceWater=Math.min(100,t.surfaceWater+28);
+      if(t.type!==T.OCEAN){
+        t.surfaceWater=Math.min(100,t.surfaceWater+28);
         if(Math.random()<0.25&&t.building) t.contamination=Math.min(100,t.contamination+28);
       }
     }
@@ -889,9 +932,10 @@ function checkEvents(){
 
   // WATER CONFLICT
   const deficit = S.waterDemand - S.waterProduced;
-  if(deficit>18){ S.warTicks++;
-    if(S.warTicks===5){
-      fireEvent('war','⚔️ WATER WAR: Rivals attack your infrastructure!','danger');
+  if(deficit>18){
+    S.warTicks++;
+    if(S.warTicks===5 &&
+       fireEvent('war','⚔️ WATER WAR: Rivals attack your infrastructure!','danger')){
       const infra = S.tiles.filter(t=>t.building?.type===B.WELL||t.building?.type===B.RESERVOIR);
       if(infra.length){
         const tgt = infra[Math.floor(Math.random()*infra.length)];
@@ -903,21 +947,20 @@ function checkEvents(){
 
   // DESERTIFICATION
   const desertExpand = S.tiles.filter(t=>t.type===T.DESERT&&t.groundwater<4).length;
-  if(desertExpand>8&&S.tick%12===0)
-    fireEvent('desertify-'+S.tick,'🏜 DESERTIFICATION: Dry zones expanding. Reforest urgently.','warn');
+  if(desertExpand>8 && S.tick%12===0)
+    fireEvent('desertify','🏜 DESERTIFICATION: Dry zones expanding. Reforest urgently.','warn',12);
 
-  // Milestone events
-  if(S.population>=200&&!S.activeEventKeys.has('m200')){
-    S.activeEventKeys.add('m200');
-    addLog('🏘 Milestone: 200 citizens! Build more housing to grow further.','success');
-  }
-  if(S.population>=500&&!S.activeEventKeys.has('m500')){
-    S.activeEventKeys.add('m500');
-    addLog('🌆 Milestone: 500 citizens! Your city thrives.','success');
-  }
-  if(S.population>=1000&&!S.activeEventKeys.has('m1000')){
-    S.activeEventKeys.add('m1000');
-    addLog('🌟 MILESTONE: 1,000 citizens! The Crystal Empire grows strong!','success');
+  // Milestones (fire once per game)
+  const milestones = [
+    [200,  'm200',  '🏘 Milestone: 200 citizens! Build more housing to grow further.'],
+    [500,  'm500',  '🌆 Milestone: 500 citizens! Your city thrives.'],
+    [1000, 'm1000', '🌟 MILESTONE: 1,000 citizens! The Crystal Empire grows strong!'],
+  ];
+  for(const [n,key,msg] of milestones){
+    if(S.population>=n && !S.milestones.has(key)){
+      S.milestones.add(key);
+      addLog(msg,'success');
+    }
   }
 }
 
@@ -934,7 +977,7 @@ function renderMap(){
     let [r,g,b] = TILE_COLORS[t.type]||[60,60,60];
 
     // Hydration tint (bluer/greener with water)
-    if(t.type!==T.OCEAN&&t.type!==T.SHALLOW){
+    if(!isWater(t)){
       const gw = t.groundwater/100;
       r = Math.round(r*(1-gw*0.18));
       g = Math.round(Math.min(255, g*(1+gw*0.14)));
@@ -985,17 +1028,15 @@ function renderMap(){
       ctx.strokeRect(px+1,py+1,TILE-2,TILE-2);
       ctx.lineWidth=1;
     }
-    // Build hover highlight
+    // Build hover highlight (FIX: uses the same rules as actual placement)
     if(S.selectedBuild && hoverTile===t){
+      const ok = placementError(t, S.selectedBuild)===null;
       if(S.selectedBuild==='demolish'){
-        const canDemolish = !!t.building;
-        ctx.fillStyle = canDemolish ? 'rgba(239,68,68,0.28)' : 'rgba(100,100,100,0.12)';
-        ctx.fillRect(px,py,TILE,TILE);
+        ctx.fillStyle = ok ? 'rgba(239,68,68,0.28)' : 'rgba(100,100,100,0.12)';
       } else {
-        const canPlace = t.type!==T.OCEAN&&t.type!==T.SHALLOW&&!t.building;
-        ctx.fillStyle = canPlace ? 'rgba(6,182,212,0.22)' : 'rgba(239,68,68,0.22)';
-        ctx.fillRect(px,py,TILE,TILE);
+        ctx.fillStyle = ok ? 'rgba(6,182,212,0.22)' : 'rgba(239,68,68,0.22)';
       }
+      ctx.fillRect(px,py,TILE,TILE);
     }
   }
 
@@ -1010,12 +1051,10 @@ function renderMap(){
 
 function drawBuilding(t,px,py){
   const color = BUILD_COLORS[t.building.type]||'#fff';
-  // Shadow dot
   ctx.fillStyle='rgba(0,0,0,0.55)';
   ctx.beginPath();
   ctx.arc(px+TILE/2,py+TILE/2,TILE/2-2,0,Math.PI*2);
   ctx.fill();
-  // Icon
   ctx.fillStyle=color;
   ctx.font=`${TILE-5}px sans-serif`;
   ctx.textAlign='center';
@@ -1025,15 +1064,13 @@ function drawBuilding(t,px,py){
 
 // ── HUD ──
 function renderHUD(){
-  const seasons = SEASONS.map((s,i)=>SEASON_EMOJI[i]+' '+s);
-
-  document.getElementById('val-date').textContent  = `${S.year} · ${seasons[S.season]}`;
+  document.getElementById('val-date').textContent  = `${S.year} · ${SEASON_EMOJI[S.season]} ${SEASONS[S.season]}`;
   document.getElementById('val-pop').textContent   = `${S.population}/${S.maxPopulation}`;
   document.getElementById('val-money').textContent = S.money;
 
   const wRatio = S.waterProduced/S.waterDemand;
-  const wEl = document.getElementById('val-water');
-  wEl.textContent = `${Math.round(S.waterProduced)}/${Math.round(S.waterDemand)}`;
+  document.getElementById('val-water').textContent =
+    `${Math.round(S.waterProduced)}/${Math.round(S.waterDemand)}`;
   document.getElementById('chip-water').className =
     'stat-chip ' + (wRatio<0.5?'danger':wRatio<0.75?'warn':'');
 
@@ -1042,36 +1079,38 @@ function renderHUD(){
     'stat-chip ' + (S.food<20?'danger':S.food<40?'warn':'');
 
   document.getElementById('chip-pop').className =
-    'stat-chip ' + (S.population<20?'danger':S.population<50?'warn':'');
+    'stat-chip ' + (S.population<20?'danger':S.population<40?'warn':'');
 
   // Gauges
   const land = landTiles();
   const avgGW = land.reduce((a,t)=>a+t.groundwater,0)/Math.max(1,land.length);
   const avgSW = land.reduce((a,t)=>a+t.surfaceWater,0)/Math.max(1,land.length);
 
-  setGauge('g-humidity',  S.humidity,   100, '#38bdf8');
-  setGauge('g-temp',      S.temperature,100, '#f97316');
-  setGauge('g-gw',        avgGW,        100, '#0ea5e9');
-  setGauge('g-sw',        avgSW,        100, '#06b6d4');
-  setGauge('g-rain',      Math.min(100,S.lastRain*8),100,'#818cf8');
+  // FIX: only humidity and groundwater use red/amber "low = bad" colouring.
+  // Cold temperatures, dry ground surfaces and dry ticks are not alarms.
+  setGauge('g-humidity', S.humidity,               '#38bdf8', true);
+  setGauge('g-temp',     S.temperature,            '#f97316', false);
+  setGauge('g-gw',       avgGW,                    '#0ea5e9', true);
+  setGauge('g-sw',       avgSW,                    '#06b6d4', false);
+  setGauge('g-rain',     Math.min(100,S.lastRain*60), '#818cf8', false); // FIX: rescaled so typical rain is visible
 
   document.getElementById('v-humidity').textContent = Math.round(S.humidity)+'%';
   document.getElementById('v-temp').textContent     = Math.round(S.temperature)+'°';
   document.getElementById('v-gw').textContent       = Math.round(avgGW)+'%';
   document.getElementById('v-sw').textContent       = Math.round(avgSW)+'%';
-  document.getElementById('v-rain').textContent     = S.lastRain.toFixed(1);
+  document.getElementById('v-rain').textContent     = S.lastRain.toFixed(2);
 
   renderTrend();
   renderSidebar();
   renderLog();
 }
 
-function setGauge(id,val,max,color){
+function setGauge(id,val,color,lowIsBad){
   const el=document.getElementById(id);
   if(!el) return;
-  const pct=Math.max(0,Math.min(100,(val/max)*100));
+  const pct=Math.max(0,Math.min(100,val));
   el.style.width=pct+'%';
-  el.style.background = pct<25 ? '#ef4444' : pct<50 ? '#f59e0b' : color;
+  el.style.background = !lowIsBad ? color : pct<25 ? '#ef4444' : pct<50 ? '#f59e0b' : color;
 }
 
 function renderTrend(){
@@ -1080,29 +1119,29 @@ function renderTrend(){
   trendCtx.fillStyle='rgba(11,23,40,0.8)';
   trendCtx.fillRect(0,0,w,h);
 
+  // FIX: water line is now supply as % of demand (100% = top), so it no longer
+  // pins to the top of the chart as soon as production passes 5 units.
   const datasets=[
     {data:S.history.hum,   color:'#38bdf8'},
     {data:S.history.gw,    color:'#0ea5e9'},
-    {data:S.history.water, color:'#22c55e', scale:10},
+    {data:S.history.water, color:'#22c55e'},
   ];
   for(const ds of datasets){
     if(ds.data.length<2) continue;
-    const max = ds.scale || 100;
     trendCtx.beginPath();
     trendCtx.strokeStyle=ds.color;
     trendCtx.lineWidth=1;
     const step = w/(ds.data.length-1);
     ds.data.forEach((v,i)=>{
-      const cx=i*step, cy=h - (Math.min(v,max)/max)*(h-4)-2;
+      const cx=i*step, cy=h - (Math.min(v,100)/100)*(h-4)-2;
       i===0 ? trendCtx.moveTo(cx,cy) : trendCtx.lineTo(cx,cy);
     });
     trendCtx.stroke();
   }
-  // Legend
   trendCtx.font='8px Courier New';
   trendCtx.fillStyle='#38bdf8'; trendCtx.fillText('HUM',2,9);
   trendCtx.fillStyle='#0ea5e9'; trendCtx.fillText('GW',28,9);
-  trendCtx.fillStyle='#22c55e'; trendCtx.fillText('WATER',52,9);
+  trendCtx.fillStyle='#22c55e'; trendCtx.fillText('SUPPLY%',48,9);
 }
 
 function renderSidebar(){
@@ -1112,13 +1151,12 @@ function renderSidebar(){
     return;
   }
   const t=S.selectedTile;
-  const tnames=['Ocean','Shallow','Plains','Forest','Desert','Mountain','Snow','Wetland'];
   const gClass = t.groundwater<15?'danger':t.groundwater<30?'warn':'good';
   const cClass  = t.contamination>50?'danger':t.contamination>25?'warn':'';
   const demolishBtn = t.building
     ? `<button id="demolish-btn" onclick="demolishTile()">✕ Demolish (${Math.floor((COSTS[t.building.type]||0)/2)}¢ refund)</button>` : '';
   el.innerHTML=`
-    <div class="tile-row"><span class="k">Terrain</span><span class="v">${tnames[t.type]}</span></div>
+    <div class="tile-row"><span class="k">Terrain</span><span class="v">${TILE_NAMES[t.type]}</span></div>
     <div class="tile-row"><span class="k">Elevation</span><span class="v">${t.elevation.toFixed(1)}</span></div>
     <div class="tile-row"><span class="k">Groundwater</span><span class="v ${gClass}">${Math.round(t.groundwater)}%</span></div>
     <div class="tile-row"><span class="k">Surface Water</span><span class="v">${Math.round(t.surfaceWater)}%</span></div>
@@ -1126,7 +1164,7 @@ function renderSidebar(){
     <div class="tile-row"><span class="k">Contamination</span><span class="v ${cClass}">${Math.round(t.contamination)}%</span></div>
     <div class="tile-row"><span class="k">Vegetation</span><span class="v">${Math.round(t.vegetation)}%</span></div>
     ${t.building ? `<div class="tile-row"><span class="k">Building</span><span class="v" style="color:${BUILD_COLORS[t.building.type]||'#fff'}">${BUILD_ICONS[t.building.type]} ${t.building.type}</span></div>` : ''}
-    ${t.building?.stored!=null ? `<div class="tile-row"><span class="k">Stored</span><span class="v">${Math.round(t.building.stored)} units</span></div>` : ''}
+    ${t.building?.stored!=null ? `<div class="tile-row"><span class="k">Stored</span><span class="v">${Math.round(t.building.stored)} / ${RES_CAPACITY}</span></div>` : ''}
     ${demolishBtn}
   `;
 }
@@ -1137,26 +1175,38 @@ function renderLog(){
   el.innerHTML=S.log.slice(0,12).map(e=>{
     const cls={success:'log-success',warn:'log-warn',warning:'log-warn',
                 danger:'log-danger',event:'log-event'}[e.type]||'log-info';
-    return `<div class="log-entry ${cls}">[T${String(e.tick||0).padStart(3,'0')}] ${e.msg}</div>`;
+    return `<div class="log-entry ${cls}">[T${String(e.tick).padStart(3,'0')}] ${e.msg}</div>`;
   }).join('');
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // BUILD MENU
 // ═══════════════════════════════════════════════════════════════════
+// FIX: tooltips are attached with event listeners instead of inline HTML strings,
+// so descriptions containing quotes or apostrophes can't break the page.
+function attachTooltip(el, title, body){
+  el.addEventListener('mouseenter', e=>showTooltip(e, title(), body));
+  el.addEventListener('mousemove',  e=>showTooltip(e, title(), body));
+  el.addEventListener('mouseleave', hideTooltip);
+}
+
 function setupBuildMenu(){
   const grid=document.getElementById('build-grid');
-  grid.innerHTML=BUILD_META.map(b=>`
-    <div class="build-btn" id="bbtn-${b.id}" onclick="selectBuild('${b.id}')"
-         onmouseenter="showTooltip(event,'${b.name} (${COSTS[b.id]}¢)','${b.desc}')"
-         onmouseleave="hideTooltip()">
+  grid.innerHTML='';
+  for(const b of BUILD_META){
+    const el=document.createElement('div');
+    el.className='build-btn';
+    el.id='bbtn-'+b.id;
+    el.innerHTML=`
       <div class="build-icon" style="color:${b.color}">${b.icon}</div>
       <div class="build-info">
         <div class="build-name">${b.name}</div>
         <div class="build-cost">${COSTS[b.id]}¢</div>
-      </div>
-    </div>
-  `).join('');
+      </div>`;
+    el.addEventListener('click', ()=>selectBuild(b.id));
+    attachTooltip(el, ()=>`${b.name} (${COSTS[b.id]}¢)`, b.desc);
+    grid.appendChild(el);
+  }
   updateBuildMenu();
 }
 
@@ -1168,36 +1218,35 @@ function updateBuildMenu(){
     if(S.selectedBuild===b.id) el.classList.add('selected');
     if(S.money < COSTS[b.id]) el.classList.add('cant-afford');
   }
-  // Bulldoze button state
   const dbtn=document.getElementById('bbtn-demolish');
-  if(dbtn){
-    dbtn.className='build-btn demolish-btn full-width'+(S.selectedBuild==='demolish'?' selected':'');
-    dbtn.style.marginTop='5px';
-  }
+  if(dbtn) dbtn.className='build-btn demolish-btn'+(S.selectedBuild==='demolish'?' selected':'');
+}
+
+function clearBuildMode(){
+  S.selectedBuild=null;
+  document.getElementById('build-mode-banner').style.display='none';
+  canvas.className='';
 }
 
 function selectBuild(type){
   if(S.selectedBuild===type){
-    S.selectedBuild=null;
-    document.getElementById('build-mode-banner').style.display='none';
-    canvas.className='';
+    clearBuildMode();
   } else {
     S.selectedBuild=type;
     const banner=document.getElementById('build-mode-banner');
+    banner.style.display='block';
     if(type==='demolish'){
       canvas.className='demolish-mode';
-      banner.style.display='block';
       banner.style.background='rgba(239,68,68,0.15)';
       banner.style.borderColor='var(--red)';
       banner.style.color='var(--red)';
-      banner.textContent='🔨 BULLDOZE MODE — Click a building to demolish · Click button again to cancel';
+      banner.textContent='🔨 BULLDOZE MODE — Click a building to demolish · Esc or click button again to cancel';
     } else {
       canvas.className='build-mode';
       banner.style.background='rgba(6,182,212,0.18)';
       banner.style.borderColor='var(--teal)';
       banner.style.color='var(--teal)';
-      banner.style.display='block';
-      banner.textContent=`● BUILD MODE: ${BUILD_META.find(b=>b.id===type)?.name} — Click tile to place · Click button again to cancel`;
+      banner.textContent=`● BUILD MODE: ${BUILD_META.find(b=>b.id===type)?.name} — Click tile to place · Esc or click button again to cancel`;
     }
   }
   updateBuildMenu();
@@ -1206,20 +1255,14 @@ function selectBuild(type){
 function placeBuild(t){
   const bt=S.selectedBuild;
   if(!bt) return;
-  if(S.money<COSTS[bt]){ addLog(`Not enough credits (need ${COSTS[bt]}¢)`,'warn'); return; }
-  if(t.type===T.OCEAN||t.type===T.SHALLOW){
-    if(bt!==B.DESALINATION){ addLog('Cannot build on water tiles','warn'); return; }
-  }
-  if(bt===B.DESALINATION){
-    const nearOcean=neighbors(t.x,t.y).some(n=>n.type===T.OCEAN||n.type===T.SHALLOW);
-    if(!nearOcean){ addLog('Desalination must be adjacent to ocean','warn'); return; }
-  }
-  if(t.building){ addLog('Tile already occupied. Demolish first.','warn'); return; }
+  if(S.money<COSTS[bt]){ addLog(`Not enough credits (need ${COSTS[bt]}¢)`,'warn'); renderLog(); return; }
+  const err = placementError(t, bt);
+  if(err){ addLog(err,'warn'); renderLog(); return; }
   t.building={type:bt, level:1, built:S.tick};
   S.money-=COSTS[bt];
   addLog(`✓ Built ${bt} at (${t.x},${t.y}) · ${COSTS[bt]}¢ spent`,'success');
   S.selectedTile=t;
-  renderSidebar();
+  renderHUD();
   updateBuildMenu();
   renderMap();
 }
@@ -1231,7 +1274,7 @@ function demolishTile(t){
   addLog(`🔨 Demolished ${t.building.type} at (${t.x},${t.y}) · refunded ${refund}¢`,'info');
   S.money+=refund;
   t.building=null;
-  if(S.selectedTile===t) renderSidebar();
+  renderHUD();
   renderMap();
   updateBuildMenu();
 }
@@ -1243,8 +1286,10 @@ const tooltipEl=document.getElementById('tooltip');
 function showTooltip(e,title,body){
   tooltipEl.innerHTML=`<strong style="color:var(--bright)">${title}</strong><br>${body}`;
   tooltipEl.style.display='block';
-  tooltipEl.style.left=(e.clientX+12)+'px';
-  tooltipEl.style.top =(e.clientY-20)+'px';
+  // FIX: keep tooltip on screen near the right/bottom edges
+  const w = tooltipEl.offsetWidth || 180, h = tooltipEl.offsetHeight || 60;
+  tooltipEl.style.left = Math.max(4, Math.min(e.clientX+12, window.innerWidth  - w - 8))+'px';
+  tooltipEl.style.top  = Math.max(4, Math.min(e.clientY-20, window.innerHeight - h - 8))+'px';
 }
 function hideTooltip(){ tooltipEl.style.display='none'; }
 
@@ -1261,10 +1306,11 @@ function getTileFromEvent(e){
 }
 
 function onMapClick(e){
+  if(S.gameOver) return;
   const t=getTileFromEvent(e);
   if(!t) return;
   if(S.selectedBuild==='demolish'){
-    if(!t.building){ addLog('No building on that tile to demolish.','warn'); return; }
+    if(!t.building){ addLog('No building on that tile to demolish.','warn'); renderLog(); return; }
     demolishTile(t);
   } else if(S.selectedBuild){
     placeBuild(t);
@@ -1281,26 +1327,39 @@ function onMapMove(e){
     if(t.building){
       const refund=Math.floor((COSTS[t.building.type]||0)/2);
       showTooltip(e,`🔨 Demolish ${t.building.type}`,`Refund: ${refund}¢ · Click to confirm`);
-    } else {
-      hideTooltip();
-    }
-  } else if(t && !S.selectedBuild){
-    const tnames=['Ocean','Shallow','Plains','Forest','Desert','Mountain','Snow','Wetland'];
+    } else hideTooltip();
+  } else if(t && S.selectedBuild){
+    const err = placementError(t, S.selectedBuild);
+    if(err) showTooltip(e,'Can\u2019t build here', err); else hideTooltip();
+  } else if(t){
     const bname=t.building?` · ${BUILD_ICONS[t.building.type]} ${t.building.type}`:'';
     showTooltip(e,
-      `${tnames[t.type]}${bname}`,
+      `${TILE_NAMES[t.type]}${bname}`,
       `GW:${Math.round(t.groundwater)}% SW:${Math.round(t.surfaceWater)}% Cont:${Math.round(t.contamination)}%`
     );
-  } else { hideTooltip(); }
+  } else hideTooltip();
+  renderMap();   // FIX: hover highlight updates immediately, not only on the next tick
 }
 
-function onMapLeave(){ hoverTile=null; hideTooltip(); }
+function onMapLeave(){ hoverTile=null; hideTooltip(); renderMap(); }
+
+function onKey(e){
+  if(e.key==='Escape'){
+    if(modalOpen) closeModal();
+    else if(S.selectedBuild){ clearBuildMode(); updateBuildMenu(); renderMap(); }
+  } else if(e.key==='Enter' && modalOpen){
+    closeModal();
+  } else if(e.key===' ' && !modalOpen){
+    e.preventDefault(); togglePause();
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // GAME LOOP
 // ═══════════════════════════════════════════════════════════════════
 function tick(){
-  if(S.paused||S.gameOver) return;
+  // FIX: the simulation no longer runs behind open dialogs (intro, help, game over)
+  if(S.paused||S.gameOver||modalOpen) return;
   S.tick++;
   if(S.tick%8===0){ S.season=(S.season+1)%4; if(S.season===0) S.year++; }
 
@@ -1315,7 +1374,7 @@ function tick(){
   S.history.hum.push(S.humidity);
   S.history.gw.push(avgGW);
   S.history.pop.push(S.population);
-  S.history.water.push(Math.min(100,S.waterProduced*2));
+  S.history.water.push(Math.min(100, (S.waterProduced/S.waterDemand)*100));
   for(const k of Object.keys(S.history))
     if(S.history[k].length>50) S.history[k].shift();
 
@@ -1326,7 +1385,9 @@ function tick(){
   // Game over check
   if(S.population<=0){
     S.gameOver=true;
+    clearInterval(gameTimer);
     addLog('💀 Civilization collapsed. Population reached zero.','danger');
+    renderLog();
     showModal(
       '💀 Civilization Collapsed',
       `Your nation survived ${S.year} year${S.year!==1?'s':''} before the water crisis claimed every last citizen.\n\nThe land remembers. Start again, and manage the cycle more carefully.`,
@@ -1338,18 +1399,26 @@ function tick(){
 // ═══════════════════════════════════════════════════════════════════
 // CONTROLS
 // ═══════════════════════════════════════════════════════════════════
+function updatePauseButton(){
+  document.getElementById('btn-pause').textContent = S.paused ? '▶ Resume' : '⏸ Pause';
+}
 function togglePause(){
+  if(S.gameOver) return;
   S.paused=!S.paused;
-  document.getElementById('btn-pause').textContent=S.paused?'▶ Resume':'⏸ Pause';
+  updatePauseButton();
 }
 
+function updateSpeedButtons(){
+  [1,2,4].forEach(s=>document.getElementById('spd'+s).classList.toggle('active', S.speed===s));
+}
+function startTimer(){
+  clearInterval(gameTimer);
+  gameTimer=setInterval(tick, BASE_TICK_MS/S.speed);
+}
 function setSpeed(s){
   S.speed=s;
-  CFG_TICK_MS=2000/s;
-  ['spd1','spd2','spd4'].forEach(id=>document.getElementById(id).classList.remove('active'));
-  document.getElementById('spd'+s).classList.add('active');
-  clearInterval(gameTimer);
-  gameTimer=setInterval(tick,CFG_TICK_MS);
+  updateSpeedButtons();
+  if(!S.gameOver) startTimer();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1362,20 +1431,24 @@ function showModal(title,body,btnText,cb){
   document.getElementById('modal-btn').textContent=btnText||'Continue';
   document.getElementById('overlay').classList.add('show');
   modalCallback=cb||null;
+  modalOpen=true;
+  hideTooltip();
 }
 function closeModal(){
   document.getElementById('overlay').classList.remove('show');
+  modalOpen=false;
   if(modalCallback){ const cb=modalCallback; modalCallback=null; cb(); }
 }
 
 function showHelp(){
   showModal(
-    '🌊 Crystal Catchment',
-    `Manage your nation's water cycle to build a thriving civilization.\n\n`+
-    `WATER CYCLE: Humidity drives rainfall. Forests increase humidity. Heat causes evaporation. Groundwater refills slowly from rain.\n\n`+
-    `BUILD: Wells tap groundwater. Reservoirs catch runoff. Farms need moisture. Housing needs water supply. Treatment Plants stop disease.\n\n`+
-    `DEMOLISH: Select the 🔨 Bulldoze tool in the Build panel, then click any building to remove it (50% cost refund). Or click a tile, then use the Demolish button in Tile Info.\n\n`+
+    `🌊 Crystal Catchment v${VERSION}`,
+    `Manage your nation's water cycle to build a thriving civilization. The game pauses while this window is open.\n\n`+
+    `WATER CYCLE: Humidity drives rainfall. Forests increase humidity and help rain soak into the ground. Heat causes evaporation. Groundwater refills slowly from rain.\n\n`+
+    `BUILD: Wells tap groundwater. Reservoirs catch runoff from their tile and the higher ground around them, then release it slowly. Farms need moisture. Housing needs water supply. Treatment Plants stop disease. Desalination goes on the coast.\n\n`+
+    `DEMOLISH: Select the 🔨 Bulldoze tool, then click any building (50% refund). Or click a tile and use the Demolish button in Tile Info.\n\n`+
     `RISKS: Over-pumping causes drought. Too much surface water causes floods. Hot + humid = hurricanes. Contaminated water = disease. Water shortage = war.\n\n`+
+    `KEYS: Space = pause · Esc = cancel build mode · Enter = close dialogs.\n\n`+
     `GOAL: Grow your population while keeping the water cycle balanced. Reach 1,000 citizens!`,
     'Play'
   );
@@ -1388,7 +1461,13 @@ function initGame(){
   clearInterval(gameTimer);
   S=makeState();
   rainParticles=[];
-  CFG_TICK_MS=2000;
+  hoverTile=null;
+
+  // FIX: reset all controls so a new game never inherits old UI state
+  clearBuildMode();
+  updatePauseButton();
+  updateSpeedButtons();
+  hideTooltip();
 
   generateWorld();
 
@@ -1400,24 +1479,32 @@ function initGame(){
       if(nw){ start=t; break; }
     }
   }
-  if(!start) start=S.tiles.find(t=>t.type===T.PLAINS)||S.tiles[MAP_H/2*MAP_W+MAP_W/2];
+  if(!start) start=S.tiles.find(t=>t.type===T.PLAINS)||S.tiles[idx(MAP_W/2, MAP_H/2)];
 
   // Starting buildings
+  // FIX: the start tile usually borders water, so it often had too few land
+  // neighbors and the starting farm/forest were silently skipped. Now each
+  // starter building goes on the nearest suitable free land tile.
   start.building={type:B.WELL, level:1, built:0};
-  const adj=neighbors(start.x,start.y).filter(t=>t.type===T.PLAINS||t.type===T.FOREST);
-  if(adj[0]) adj[0].building={type:B.HOUSE,   level:1, built:0};
-  if(adj[1]) adj[1].building={type:B.FARM,    level:1, built:0};
-  if(adj[2]) adj[2].building={type:B.FOREST,  level:1, built:0};
+  const buildable = t => !t.building &&
+    (t.type===T.PLAINS || t.type===T.FOREST || t.type===T.WETLAND);
+  const dist = t => Math.abs(t.x-start.x) + Math.abs(t.y-start.y);
+  for(const bt of [B.HOUSE, B.FARM, B.FOREST]){
+    const spot = S.tiles.filter(buildable).sort((a,b)=>dist(a)-dist(b))[0];
+    if(spot) spot.building={type:bt, level:1, built:0};
+  }
 
   addLog('🌊 Crystal Catchment initialized. Your water cycle awaits.','success');
   addLog('💡 Tip: Build wells and housing first. Watch groundwater levels.','info');
   addLog('🌲 Tip: Forests increase humidity and rainfall. Protect them.','info');
 
   setupBuildMenu();
+  // Prime derived values so the HUD is accurate before the first tick
+  simBuildings();
   renderMap();
   renderHUD();
 
-  gameTimer=setInterval(tick, CFG_TICK_MS);
+  startTimer();
 
   showModal(
     '🌊 Crystal Catchment',
@@ -1433,14 +1520,17 @@ window.addEventListener('load',()=>{
   ctx=canvas.getContext('2d');
 
   trendCanvas=document.getElementById('trend-canvas');
-  // match parent width
-  const sideWidth=236;
-  trendCanvas.width=sideWidth;
+  trendCanvas.width=236;
   trendCtx=trendCanvas.getContext('2d');
 
   canvas.addEventListener('click',      onMapClick);
   canvas.addEventListener('mousemove',  onMapMove);
   canvas.addEventListener('mouseleave', onMapLeave);
+  document.addEventListener('keydown',  onKey);
+
+  const dbtn=document.getElementById('bbtn-demolish');
+  dbtn.addEventListener('click', ()=>selectBuild('demolish'));
+  attachTooltip(dbtn, ()=>'Bulldoze', 'Click any building to demolish it. Refunds 50% of build cost.');
 
   initGame();
 });
